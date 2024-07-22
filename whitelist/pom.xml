@@ -5,19 +5,18 @@
 	<groupId>com.oracle.acs</groupId>
 	<artifactId>whitelist</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.3.0</version>
-		<relativePath/>
+		<relativePath />
 	</parent>
-	
+
 	<properties>
 		<java.version>17</java.version>
+		<spring-boot.run.jvmArguments>-Dfile.encoding=UTF-8 -Dcoherence.log.level=9 -Dcoherence.cluster=whitelist_cluster -Dcoherence.localhost=192.168.68.102 -Dcoherence.wka=192.168.68.102 -Dcoherence.wka.port=9191  -Dcoherence.mode=prod  -Dcoherence.ttl=1  -Djava.net.preferIPv4Stack=true </spring-boot.run.jvmArguments>
 	</properties>
-	
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -30,7 +29,7 @@
 		<dependency>
 			<groupId>com.oracle.coherence.ce</groupId>
 			<artifactId>coherence</artifactId>
-			<version>14.1.1-0-17</version>
+			<version>14.1.1-0-18</version>
 		</dependency>
 
 		<dependency>
