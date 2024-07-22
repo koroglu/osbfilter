@@ -1,6 +1,7 @@
 package com.oracle.acs.cache;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -12,22 +13,47 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class CacheService {
 
-	private NamedCache<String,List<String>> cacheWhileList ;
+	private NamedCache<String,List<Map<String,Object>>> cacheWhiteList ;
+	
+	private NamedCache<String, List<Map<String, Object>>> getIpByContext;
+	
+	
 	
 	@PostConstruct
 	public void init() {
 		System.out.println("Initializing Cache Service...");
-//		cacheWhileList= CacheFactory.getCache("cacheWhileList");
-	}
-
-	
-	public void putCache(List<String> listIpAddress, String context) {
-		cacheWhileList.put(context, listIpAddress);
+		setCacheWhiteList(CacheFactory.getCache("cacheWhileList"));
+		getIpByContext  = CacheFactory.getCache("getIpByContext");
 		
 	}
-	
-	public List<String> getIpAddressFromCache(String context) {
-		return cacheWhileList.get(context);
+
+
+
+	public NamedCache<String, List<Map<String, Object>>> getGetIpByContext() {
+		return getIpByContext;
 	}
+
+
+
+	public void setGetIpByContext(NamedCache<String, List<Map<String, Object>>> getIpByContext) {
+		this.getIpByContext = getIpByContext;
+	}
+
+
+
+	public NamedCache<String,List<Map<String,Object>>> getCacheWhiteList() {
+		return cacheWhiteList;
+	}
+
+
+
+	public void setCacheWhiteList(NamedCache<String,List<Map<String,Object>>> cacheWhiteList) {
+		this.cacheWhiteList = cacheWhiteList;
+	}
+
+
+
+
+
 	
 }
