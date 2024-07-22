@@ -14,48 +14,71 @@ import com.oracle.acs.model.WhiteListModel;
 import jakarta.annotation.PostConstruct;
 
 @Component
-public class WhiteListDAO extends BaseDAO{
+public class WhiteListDAO extends BaseDAO {
+
+	@Autowired
+	CacheService cacheService;
 	
-	@Autowired CacheService cacheService;
-	
-    @Bean
-    public JdbcTemplate jdbcTemplate () {
-    	JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-    	return jdbcTemplate;
-    }
-    
-    
+
+	@Bean
+	public JdbcTemplate jdbcTemplate() {
+		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+		return jdbcTemplate;
+	}
+
 	@PostConstruct
 	public void init() {
 		
 		List<Map<String, Object>> queryForList = jdbcTemplate().queryForList("SELECT * from WHITE_LIST");
+		cacheService.getCacheWhiteList().put("all",queryForList);
+		
 		for (Map<String, Object> map : queryForList) {
 			System.out.println(map.get("context"));
 		}
+		
 	}
 
-
 	public List<Map<String, Object>> listIpByContext(String context) {
-		List<Map<String, Object>> queryForList = jdbcTemplate().queryForList("SELECT * from WHITE_LIST WHERE context =  ?",context);
+		List<Map<String, Object>> queryForList = null;
+		if (cacheService.getGetIpByContext().get(context) == null ) {
+			queryForList = jdbcTemplate().queryForList("SELECT * from WHITE_LIST WHERE context =  ?", context);
+			if (queryForList.size()>0 ) {
+				cacheService.getGetIpByContext().put(context, queryForList);	
+			}
+		} else {
+			queryForList = cacheService.getGetIpByContext().get(context);
+		}
+		
 		return queryForList;
 	}
 
+	public boolean doIHavePermission(String context, String ipAddress, int listenMode) {
+		Integer kacTaneIpAdresiVar = 0;
+		if (listenMode == 1) {
+			saveWhiteListModel(new WhiteListModel(context, ipAddress));
+			return true;
+		} else {
 
-	public boolean doIHavePermission(String context, String ipAddress) {
-		Integer kacTaneIpAdresiVar = jdbcTemplate().queryForObject("SELECT count(1) from WHITE_LIST WHERE context =  ? and ip_address like ?",Integer.class,context,ipAddress);
+		}
+		kacTaneIpAdresiVar = jdbcTemplate().queryForObject("SELECT count(1) from WHITE_LIST WHERE context =  ? and ip_address like ?", Integer.class, context,ipAddress);
 		
-		return kacTaneIpAdresiVar>0?true:false;
+		return kacTaneIpAdresiVar > 0 ? true : false;
 	}
-
 
 	public boolean saveWhiteListModel(WhiteListModel model) {
 		try {
-			int update = jdbcTemplate().update("INSERT INTO WHITE_LIST (white_list_id, context, ip_address )  VALUES ( SEQ_WHITE_LIST.nextval, ? , ?  ) ",model.getContext(),model.getIpAddress());
+			int update = jdbcTemplate().update(
+					"INSERT INTO WHITE_LIST (white_list_id, context, ip_address )  VALUES ( SEQ_WHITE_LIST.nextval, ? , ?  ) ",
+					model.getContext(), model.getIpAddress());
+			
+			List queryForList = jdbcTemplate().queryForList("SELECT * from WHITE_LIST WHERE context =  ?", model.getContext());
+			cacheService.getGetIpByContext().put(model.getContext(), queryForList);
+			
 			return true;
 		} catch (Exception e) {
 			return false;
 		}
-		
+
 	}
 
 	public List<Map<String, Object>> listAll() {
@@ -63,6 +86,4 @@ public class WhiteListDAO extends BaseDAO{
 		return queryForList;
 	}
 
-	
-	
 }
