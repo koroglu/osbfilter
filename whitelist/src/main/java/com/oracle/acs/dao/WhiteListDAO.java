@@ -32,8 +32,11 @@ public class WhiteListDAO extends BaseDAO {
 		List<Map<String, Object>> queryForList = jdbcTemplate().queryForList("SELECT * from WHITE_LIST");
 		cacheService.getCacheWhiteList().put("all",queryForList);
 		
+		Map<String,String> ipAndAddressList = cacheService.getIpAndContextList();
+		
 		for (Map<String, Object> map : queryForList) {
 			System.out.println(map.get("context"));
+			ipAndAddressList.put(map.get("context")+"_"+map.get("ip_address"), map.get("white_list_id").toString());
 		}
 		
 	}
@@ -57,9 +60,10 @@ public class WhiteListDAO extends BaseDAO {
 		if (listenMode == 1) {
 			saveWhiteListModel(new WhiteListModel(context, ipAddress));
 			return true;
-		} else {
-
 		}
+		
+		if (cacheService.getIpAndContextList().containsKey(context+"_"+ipAddress)) return true;
+		
 		kacTaneIpAdresiVar = jdbcTemplate().queryForObject("SELECT count(1) from WHITE_LIST WHERE context =  ? and ip_address like ?", Integer.class, context,ipAddress);
 		
 		return kacTaneIpAdresiVar > 0 ? true : false;
